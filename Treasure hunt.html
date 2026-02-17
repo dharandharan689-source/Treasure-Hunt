@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>17•02•20•06 Birthday Hunt 🎂</title>
+
+<style>
+body { margin:0; font-family:Arial; overflow:hidden; }
+#map { height:100vh; width:100%; }
+
+#infoBox {
+    position:absolute;
+    top:15px;
+    left:50%;
+    transform:translateX(-50%);
+    background:white;
+    padding:15px 25px;
+    border-radius:20px;
+    box-shadow:0 5px 15px rgba(0,0,0,0.3);
+    text-align:center;
+    z-index:5;
+    max-width:90%;
+}
+
+canvas {
+    position:absolute;
+    top:0;
+    left:0;
+    pointer-events:none;
+}
+</style>
+</head>
+
+<body>
+
+<div id="infoBox">
+    <h3>🎂 17 • 02 • 20 • 06</h3>
+    <p id="status">Press Start to begin your birthday journey...</p>
+    <button onclick="startTracking()">Start Hunt</button>
+</div>
+
+<div id="map"></div>
+<canvas id="fireworks"></canvas>
+
+<audio id="birthdayMusic">
+  <source src="https://www2.cs.uic.edu/~i101/SoundFiles/HappyBirthday.mid">
+</audio>
+
+<script>
+
+const checkpoints = [
+
+{
+name:"17 - Gurunath Stationary",
+lat:10.7291212,
+lng:79.0190745,
+message:"🎉 Happy Birthday, Purnima 💖\nGurunath is where we shared so many memories — funny moments, silly jokes, and endless laughter 😂✨\nLet’s begin your special journey from here."
+},
+
+{
+name:"02 - TIFAC CORE",
+lat:10.7293761,
+lng:79.0201491,
+message:"😏 Do you remember this path?\nYou ate so many of my lunches here 🍱😂\nSome crimes are unforgettable 🤭✨"
+},
+
+{
+name:"20 - TDC",
+lat:10.7287387,
+lng:79.0208206,
+message:"🛣️ Just like this long road,\nMay your life also be long, peaceful, and joyful 🤍🌸\nMay you always stay happy with your family."
+},
+
+{
+name:"06 - Green Cafe",
+lat:10.7272303,
+lng:79.0213158,
+message:"🌿 This Green Café made our friendship bond stronger 💚\nSo many talks, so many laughs…\nHappy Birthday, Purnima 💕"
+},
+
+{
+name:"Final 20 - KC Canteen 🎁",
+lat:10.7272296,
+lng:79.0200156,
+message:"🎂 Happy 20th Birthday, Purnima 👑\nMay you live long, my dimple girl 😄💖\nHaan… marakkama thanni kudi 💧😉\nYour surprise is waiting inside KC! 🎁✨"
+}
+
+];
+
+let currentIndex = 0;
+let map, userMarker, watchID;
+
+function initMap() {
+    map = new google.maps.Map(document.getElementById("map"), {
+        center: checkpoints[0],
+        zoom: 17
+    });
+}
+
+function startTracking() {
+    if (navigator.geolocation) {
+        watchID = navigator.geolocation.watchPosition(updateLocation);
+        document.getElementById("status").innerText =
+            "📍 Reach: " + checkpoints[currentIndex].name;
+    } else {
+        alert("Geolocation not supported");
+    }
+}
+
+function updateLocation(position) {
+
+    const userPos = {
+        lat: position.coords.latitude,
+        lng: position.coords.longitude
+    };
+
+    if (!userMarker) {
+        userMarker = new google.maps.Marker({
+            position:userPos,
+            map:map,
+            title:"You"
+        });
+    } else {
+        userMarker.setPosition(userPos);
+    }
+
+    const target = checkpoints[currentIndex];
+    const distance = getDistance(userPos.lat, userPos.lng, target.lat, target.lng);
+
+    document.getElementById("status").innerHTML =
+        "Distance: " + distance.toFixed(1) + " meters";
+
+    if (distance < 20) {
+
+        alert(checkpoints[currentIndex].message);
+
+        currentIndex++;
+
+        if (currentIndex >= checkpoints.length) {
+            navigator.geolocation.clearWatch(watchID);
+            launchFireworks();
+            document.getElementById("birthdayMusic").play();
+            document.getElementById("status").innerHTML =
+                "🎆 HAPPY BIRTHDAY PURNIMA 🎂";
+            return;
+        }
+
+        document.getElementById("status").innerHTML =
+            "Next: " + checkpoints[currentIndex].name;
+    }
+}
+
+function getDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371e3;
+    const φ1 = lat1 * Math.PI/180;
+    const φ2 = lat2 * Math.PI/180;
+    const Δφ = (lat2-lat1) * Math.PI/180;
+    const Δλ = (lon2-lon1) * Math.PI/180;
+
+    const a = Math.sin(Δφ/2)*Math.sin(Δφ/2) +
+              Math.cos(φ1)*Math.cos(φ2)*
+              Math.sin(Δλ/2)*Math.sin(Δλ/2);
+
+    const c = 2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+    return R*c;
+}
+
+function launchFireworks(){
+    const canvas = document.getElementById("fireworks");
+    const ctx = canvas.getContext("2d");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    setInterval(() => {
+        const x = Math.random() * canvas.width;
+        const y = Math.random() * canvas.height / 2;
+        const radius = Math.random() * 4 + 2;
+
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, Math.PI * 2);
+        ctx.fillStyle = "hsl(" + Math.random()*360 + ",100%,50%)";
+        ctx.fill();
+    }, 100);
+}
+
+</script>
+
+<script async defer
+src="https://maps.googleapis.com/maps/api/js?key=YOUR_NEW_API_KEY&callback=initMap">
+</script>
+
+</body>
+</html>
